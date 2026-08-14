@@ -1,1 +1,0 @@
-# EarnApp_bot
