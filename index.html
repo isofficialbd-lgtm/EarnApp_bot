@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="bn">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earn Mini App</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script><link rel="stylesheet" href="style.css"></head>
+<body>
+<main>
+<header><div><small>স্বাগতম</small><h1 id="name">বন্ধু</h1></div><div id="avatar">👤</div></header>
+<section class="balance"><small>Balance</small><strong>৳ <span id="balance">0.00</span></strong></section>
+<section class="grid">
+<button onclick="loadTasks()">📋<b>Tasks</b><small>কাজ করে আয়</small></button>
+<button onclick="showReferral()">🎁<b>Referral</b><small>বন্ধু আনুন</small></button>
+<button onclick="showProfile()">👤<b>Profile</b><small>অ্যাকাউন্ট</small></button>
+<button onclick="showWithdraw()">💸<b>Withdraw</b><small>টাকা তুলুন</small></button>
+</section>
+<div id="content" class="panel"><h2>🏠 Home</h2><p>আপনার Mini App প্রস্তুত।</p></div>
+<nav><button onclick="home()">🏠</button><button onclick="loadTasks()">📋</button><button onclick="showReferral()">🎁</button><button onclick="showProfile()">👤</button></nav>
+</main><script src="app.js"></script></body></html>
