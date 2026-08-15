@@ -193,6 +193,7 @@ async function loadUser() {
 
   try {
 
+   
     const result =
   await db.rpc(
     "get_or_create_user",
