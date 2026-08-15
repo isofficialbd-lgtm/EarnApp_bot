@@ -3,7 +3,7 @@
 // Telegram User + Balance + Tasks + Referral + Withdraw
 // =====================================================
 
-const tg = window.Telegram?.WebApp;
+const tg = window.Telegram?.WebApp || null;
 
 if (tg) {
   tg.ready();
@@ -102,14 +102,21 @@ const TASKS = [
 // ELEMENTS
 // =====================================================
 
-const nameEl = document.getElementById("name");
-const avatarEl = document.getElementById("avatar");
-const balanceEl = document.getElementById("balance");
-const contentEl = document.getElementById("content");
+const nameEl =
+  document.getElementById("name");
+
+const avatarEl =
+  document.getElementById("avatar");
+
+const balanceEl =
+  document.getElementById("balance");
+
+const contentEl =
+  document.getElementById("content");
 
 
 // =====================================================
-// SUPABASE LOAD
+// SUPABASE INITIALIZE
 // =====================================================
 
 async function initSupabase() {
@@ -121,20 +128,23 @@ async function initSupabase() {
         "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
       );
 
-    db =
-      module.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+    db = module.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
     await loadUser();
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Supabase initialization error:",
+      error
+    );
 
-    alert(
-      "Supabase connection failed."
+    showError(
+      "Supabase connection failed.",
+      error
     );
 
   }
@@ -143,11 +153,23 @@ async function initSupabase() {
 
 
 // =====================================================
-// USER
+// LOAD USER
 // =====================================================
 
 async function loadUser() {
 
+  if (!db) {
+
+    showError(
+      "Database connection is not ready."
+    );
+
+    return;
+
+  }
+
+
+  // Telegram-এর বাইরে সরাসরি browser দিয়ে test করলে Demo user
   if (!telegramUser.id) {
 
     currentUser = {
@@ -158,7 +180,6 @@ async function loadUser() {
     };
 
     updateHeader();
-
     home();
 
     return;
@@ -168,25 +189,34 @@ async function loadUser() {
 
   try {
 
-    const { data, error } =
+    const result =
       await db.rpc(
         "get_or_create_user",
         {
           p_telegram_id:
-            telegramUser.id,
+            Number(telegramUser.id),
+
           p_first_name:
-            telegramUser.first_name || "বন্ধু"
+            telegramUser.first_name ||
+            "বন্ধু"
         }
       );
 
 
+    const data = result.data;
+    const error = result.error;
+
+
     if (error) {
 
-      console.error(error);
+      console.error(
+        "get_or_create_user error:",
+        error
+      );
 
-      alert(
-        "User database error: " +
-        error.message
+      showError(
+        "User database error",
+        error
       );
 
       return;
@@ -194,19 +224,80 @@ async function loadUser() {
     }
 
 
+    if (!data) {
+
+      showError(
+        "User data পাওয়া যায়নি।"
+      );
+
+      return;
+
+    }
+
+
+    // Supabase RPC কখনো array, কখনো object দিতে পারে
     currentUser =
       Array.isArray(data)
         ? data[0]
         : data;
 
 
-    updateHeader();
+    if (!currentUser) {
 
+      showError(
+        "User record পাওয়া যায়নি।"
+      );
+
+      return;
+
+    }
+
+
+    updateHeader();
     home();
+
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "loadUser error:",
+      error
+    );
+
+    showError(
+      "User database error",
+      error
+    );
+
+  }
+
+}
+
+
+// =====================================================
+// ERROR DISPLAY
+// =====================================================
+
+function showError(title, error = null) {
+
+  let message =
+    title || "Something went wrong.";
+
+  if (error?.message) {
+
+    message +=
+      "\n\n" +
+      error.message;
+
+  }
+
+
+  console.error(message);
+
+
+  if (typeof alert === "function") {
+
+    alert(message);
 
   }
 
@@ -222,12 +313,15 @@ function updateHeader() {
   if (!currentUser) return;
 
 
+  const name =
+    currentUser.first_name ||
+    telegramUser.first_name ||
+    "বন্ধু";
+
+
   if (nameEl) {
 
-    nameEl.textContent =
-      currentUser.first_name ||
-      telegramUser.first_name ||
-      "বন্ধু";
+    nameEl.textContent = name;
 
   }
 
@@ -235,11 +329,7 @@ function updateHeader() {
   if (avatarEl) {
 
     avatarEl.textContent =
-      (
-        currentUser.first_name ||
-        telegramUser.first_name ||
-        "U"
-      )
+      String(name)
         .charAt(0)
         .toUpperCase();
 
@@ -294,6 +384,12 @@ function home() {
   if (!contentEl) return;
 
 
+  const name =
+    currentUser?.first_name ||
+    telegramUser.first_name ||
+    "বন্ধু";
+
+
   contentEl.innerHTML = `
 
     <h2>🏠 Home</h2>
@@ -301,15 +397,10 @@ function home() {
     <p>
       স্বাগতম,
       <b>
-        ${escapeHTML(
-          currentUser?.first_name ||
-          telegramUser.first_name ||
-          "বন্ধু"
-        )}
+        ${escapeHTML(name)}
       </b>
       ❤️
     </p>
-
 
     <div class="task">
 
@@ -320,7 +411,6 @@ function home() {
       </h2>
 
     </div>
-
 
     <div class="task">
 
@@ -342,6 +432,7 @@ function home() {
 
   `;
 
+
   refresh();
 
 }
@@ -356,6 +447,17 @@ async function loadTasks() {
   if (!contentEl) return;
 
 
+  if (!db) {
+
+    showError(
+      "Database connection নেই।"
+    );
+
+    return;
+
+  }
+
+
   let completed = [];
 
 
@@ -366,25 +468,35 @@ async function loadTasks() {
         "get_completed_tasks",
         {
           p_telegram_id:
-            telegramUser.id
+            Number(telegramUser.id)
         }
       );
 
 
-    if (!error && data) {
+    if (error) {
+
+      console.error(
+        "get_completed_tasks error:",
+        error
+      );
+
+    } else if (data) {
 
       completed =
         data.map(
-          x =>
-            x.task_id ||
-            x
+          item =>
+            item.task_id ||
+            item
         );
 
     }
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Task loading error:",
+      error
+    );
 
   }
 
@@ -424,29 +536,25 @@ async function loadTasks() {
 
           ${
             done
-
               ?
-
-            `
-              <button
-                class="primary"
-                disabled
-                style="opacity:.55"
-              >
-                ✅ Completed
-              </button>
-            `
-
+              `
+                <button
+                  class="primary"
+                  disabled
+                  style="opacity:.55"
+                >
+                  ✅ Completed
+                </button>
+              `
               :
-
-            `
-              <button
-                class="primary"
-                onclick="startTask('${task.id}')"
-              >
-                🔗 Start Task
-              </button>
-            `
+              `
+                <button
+                  class="primary"
+                  onclick="startTask('${task.id}')"
+                >
+                  🔗 Start Task
+                </button>
+              `
           }
 
         </div>
@@ -488,18 +596,49 @@ async function startTask(id) {
 
   const task =
     TASKS.find(
-      t => t.id === id
+      item => item.id === id
     );
 
-  if (!task) return;
+
+  if (!task) {
+
+    alert("Task পাওয়া যায়নি।");
+
+    return;
+
+  }
 
 
-  // Open task
-  if (tg) {
+  if (!telegramUser.id) {
 
-    tg.openLink(task.url);
+    alert(
+      "Telegram Mini App-এর ভিতর থেকে Task করুন।"
+    );
 
-  } else {
+    return;
+
+  }
+
+
+  // Task link open
+  try {
+
+    if (tg) {
+
+      tg.openLink(task.url);
+
+    } else {
+
+      window.open(
+        task.url,
+        "_blank"
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
 
     window.open(
       task.url,
@@ -509,7 +648,7 @@ async function startTask(id) {
   }
 
 
-  // Wait
+  // 15 seconds wait
   setTimeout(async () => {
 
     const confirmTask =
@@ -518,8 +657,7 @@ async function startTask(id) {
       );
 
 
-    if (!confirmTask)
-      return;
+    if (!confirmTask) return;
 
 
     try {
@@ -529,18 +667,23 @@ async function startTask(id) {
           "complete_task",
           {
             p_telegram_id:
-              telegramUser.id,
+              Number(telegramUser.id),
+
             p_task_id:
               task.id,
+
             p_reward:
-              task.reward
+              Number(task.reward)
           }
         );
 
 
       if (error) {
 
-        console.error(error);
+        console.error(
+          "complete_task error:",
+          error
+        );
 
         alert(
           "Task complete হয়নি:\n" +
@@ -565,11 +708,14 @@ async function startTask(id) {
 
       await loadUser();
 
+
       alert(
         `🎉 Task Complete!\n\n৳${task.reward} Reward যোগ হয়েছে।`
       );
 
-      loadTasks();
+
+      await loadTasks();
+
 
     } catch (error) {
 
@@ -592,11 +738,13 @@ async function startTask(id) {
 
 function showReferral() {
 
+  if (!contentEl) return;
+
+
   const telegramId =
     telegramUser.id || "demo";
 
 
-  // Telegram Mini App referral format
   const botUsername =
     "isofficialbd_bot";
 
@@ -629,7 +777,6 @@ function showReferral() {
         </b>
       </p>
 
-
       <input
         id="refLink"
         class="input"
@@ -637,14 +784,12 @@ function showReferral() {
         value="${escapeAttribute(link)}"
       >
 
-
       <button
         class="primary"
         onclick="copyReferral()"
       >
         📋 Copy Referral Link
       </button>
-
 
       <button
         class="primary"
@@ -670,6 +815,7 @@ async function copyReferral() {
     document.getElementById(
       "refLink"
     );
+
 
   if (!input) return;
 
@@ -712,6 +858,7 @@ function shareReferral() {
       "refLink"
     );
 
+
   if (!input) return;
 
 
@@ -723,22 +870,23 @@ function shareReferral() {
     input.value;
 
 
+  const shareUrl =
+    "https://t.me/share/url?url=" +
+    encodeURIComponent(url) +
+    "&text=" +
+    encodeURIComponent(text);
+
+
   if (tg) {
 
     tg.openTelegramLink(
-      "https://t.me/share/url?url=" +
-      encodeURIComponent(url) +
-      "&text=" +
-      encodeURIComponent(text)
+      shareUrl
     );
 
   } else {
 
     window.open(
-      "https://t.me/share/url?url=" +
-      encodeURIComponent(url) +
-      "&text=" +
-      encodeURIComponent(text),
+      shareUrl,
       "_blank"
     );
 
@@ -752,6 +900,9 @@ function shareReferral() {
 // =====================================================
 
 function showProfile() {
+
+  if (!contentEl) return;
+
 
   contentEl.innerHTML = `
 
@@ -770,7 +921,6 @@ function showProfile() {
         </b>
       </p>
 
-
       <p>
         Telegram ID:
         <b>
@@ -778,14 +928,12 @@ function showProfile() {
         </b>
       </p>
 
-
       <p>
         💰 Balance:
         <b>
           ৳${getBalance().toFixed(2)}
         </b>
       </p>
-
 
       <p>
         👥 Referral:
@@ -851,7 +999,6 @@ function showWithdraw() {
           টি Referral প্রয়োজন।
         </p>
 
-
         <button
           class="primary"
           onclick="showReferral()"
@@ -897,10 +1044,7 @@ function showWithdraw() {
         <p>
           আরও
           <b>
-            ৳${(
-              MIN_WITHDRAW -
-              balance
-            ).toFixed(2)}
+            ${(MIN_WITHDRAW - balance).toFixed(2)}
           </b>
           প্রয়োজন।
         </p>
@@ -927,7 +1071,6 @@ function showWithdraw() {
         </b>
       </p>
 
-
       <input
         id="amount"
         class="input"
@@ -937,7 +1080,6 @@ function showWithdraw() {
         placeholder="Withdraw Amount"
       >
 
-
       <input
         id="phone"
         class="input"
@@ -945,11 +1087,11 @@ function showWithdraw() {
         placeholder="bKash / Nagad Number"
       >
 
-
       <select
         id="method"
         class="input"
       >
+
         <option value="bkash">
           bKash
         </option>
@@ -957,8 +1099,8 @@ function showWithdraw() {
         <option value="nagad">
           Nagad
         </option>
-      </select>
 
+      </select>
 
       <button
         class="primary"
@@ -1033,6 +1175,17 @@ async function submitWithdraw() {
   }
 
 
+  if (!telegramUser.id) {
+
+    alert(
+      "Telegram Mini App-এর ভিতর থেকে Withdraw করুন।"
+    );
+
+    return;
+
+  }
+
+
   try {
 
     const { data, error } =
@@ -1040,11 +1193,14 @@ async function submitWithdraw() {
         "submit_withdraw",
         {
           p_telegram_id:
-            telegramUser.id,
+            Number(telegramUser.id),
+
           p_amount:
             amount,
+
           p_payment_number:
             phone,
+
           p_method:
             method
         }
@@ -1053,7 +1209,10 @@ async function submitWithdraw() {
 
     if (error) {
 
-      console.error(error);
+      console.error(
+        "submit_withdraw error:",
+        error
+      );
 
       alert(
         "Withdraw request হয়নি:\n" +
@@ -1078,12 +1237,14 @@ async function submitWithdraw() {
 
     await loadUser();
 
+
     alert(
       "✅ Withdraw Request সফলভাবে পাঠানো হয়েছে!"
     );
 
 
     showWithdraw();
+
 
   } catch (error) {
 
@@ -1105,26 +1266,11 @@ async function submitWithdraw() {
 function escapeHTML(value) {
 
   return String(value)
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
@@ -1169,7 +1315,7 @@ window.submitWithdraw =
 
 
 // =====================================================
-// START
+// START APP
 // =====================================================
 
 initSupabase();
