@@ -18,7 +18,7 @@ const telegramUser = tg?.initDataUnsafe?.user || {};
 // =====================================================
 
 const SUPABASE_URL =
-  "https://nfqvstrmpyqwiemctkna.supabase.co";
+  "https://nfqvstrmpyqwiemcktna.supabase.co";
 
 const SUPABASE_KEY =
   "sb_publishable_FG3q1xCt_cpvcGoDav1vXQ_2wZLMtjC";
