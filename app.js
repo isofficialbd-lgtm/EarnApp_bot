@@ -175,9 +175,7 @@ async function loadUser() {
           p_telegram_id:
             telegramUser.id,
           p_first_name:
-            telegramUser.first_name || "বন্ধু",
-          p_username:
-            telegramUser.username || null
+            telegramUser.first_name || "বন্ধু"
         }
       );
 
