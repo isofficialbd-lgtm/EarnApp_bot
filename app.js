@@ -750,7 +750,7 @@ function showReferral() {
 
 
   const botUsername =
-    "isofficialbd_bot";
+    "@EarnAppuie_bot";
 
 
   const link =
