@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EarnApp Admin Panel</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 18px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    button {
+      background: #111827;
+      color: white;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      background: #eef2ff;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .withdraw {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>⚙️ EarnApp Admin Panel</h1>
+  <p>Admin Dashboard</p>
+</header>
+
+<div class="container">
+
+  <div class="card" id="loginBox">
+    <h2>🔐 Admin Login</h2>
+
+    <input
+      type="password"
+      id="adminPassword"
+      placeholder="Admin Password"
+    >
+
+    <button onclick="login()">Login</button>
+
+    <p id="loginMessage"></p>
+  </div>
+
+  <div id="panel" class="hidden">
+
+    <div class="stats">
+
+      <div class="stat">
+        <b>Users</b>
+        <div id="userCount">0</div>
+      </div>
+
+      <div class="stat">
+        <b>Withdraw Requests</b>
+        <div id="withdrawCount">0</div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h2>⚙️ App Settings</h2>
+
+      <label>Minimum Withdraw</label>
+      <input id="minimumWithdraw" type="number" value="200">
+
+      <label>Referral Reward</label>
+      <input id="referralReward" type="number" value="30">
+
+      <button onclick="saveSettings()">Save Settings</button>
+
+      <p id="settingsMessage"></p>
+    </div>
+
+    <div class="card">
+      <h2>📋 Add Task</h2>
+
+      <input id="taskTitle" placeholder="Task title">
+
+      <textarea
+        id="taskDescription"
+        placeholder="Task description"
+      ></textarea>
+
+      <select id="taskType">
+        <option value="youtube">YouTube</option>
+        <option value="ad">Advertisement</option>
+        <option value="other">Other</option>
+      </select>
+
+      <input id="taskUrl" placeholder="Task URL">
+
+      <input
+        id="taskReward"
+        type="number"
+        placeholder="Reward"
+      >
+
+      <button onclick="addTask()">➕ Add Task</button>
+
+      <p id="taskMessage"></p>
+    </div>
+
+    <div class="card">
+      <h2>📺 Tasks</h2>
+      <div id="taskList">Loading...</div>
+    </div>
+
+    <div class="card">
+      <h2>💸 Withdraw Requests</h2>
+      <div id="withdrawList">Loading...</div>
+    </div>
+
+    <div class="card">
+      <button onclick="logout()">Logout</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+  /*
+    IMPORTANT:
+    এখানে এখনো Supabase key দেওয়া হয়নি।
+    তাই Login/Database functions পরে connect করব।
+  */
+
+  const ADMIN_PASSWORD = "CHANGE_THIS_PASSWORD";
+
+  function login() {
+
+    const password =
+      document.getElementById("adminPassword").value;
+
+    if (password === ADMIN_PASSWORD) {
+
+      document.getElementById("loginBox")
+        .classList.add("hidden");
+
+      document.getElementById("panel")
+        .classList.remove("hidden");
+
+    } else {
+
+      document.getElementById("loginMessage")
+        .innerText = "❌ ভুল Password";
+
+    }
+
+  }
+
+  function logout() {
+
+    document.getElementById("panel")
+      .classList.add("hidden");
+
+    document.getElementById("loginBox")
+      .classList.remove("hidden");
+
+  }
+
+  function saveSettings() {
+
+    document.getElementById("settingsMessage")
+      .innerText =
+      "Settings save করার database connection এখনো তৈরি হয়নি।";
+
+  }
+
+  function addTask() {
+
+    document.getElementById("taskMessage")
+      .innerText =
+      "Task database connection এখনো তৈরি হয়নি।";
+
+  }
+
+</script>
+
+</body>
+</html>
