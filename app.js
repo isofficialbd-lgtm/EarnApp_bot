@@ -194,17 +194,22 @@ async function loadUser() {
   try {
 
     const result =
-      await db.rpc(
-        "get_or_create_user",
-        {
-          p_telegram_id:
-            Number(telegramUser.id),
+  await db.rpc(
+    "get_or_create_user",
+    {
+      p_telegram_id:
+        Number(telegramUser.id),
 
-          p_first_name:
-            telegramUser.first_name ||
-            "বন্ধু"
-        }
-      );
+      p_first_name:
+        telegramUser.first_name ||
+        "বন্ধু",
+
+      p_referrer_id:
+        startParam.startsWith("ref_")
+          ? Number(startParam.replace("ref_", ""))
+          : null
+    }
+  );
 
 
     const data = result.data;
