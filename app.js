@@ -7,37 +7,29 @@ if (tg) {
 
 const user = tg?.initDataUnsafe?.user || {};
 
-// ===============================
-// SUPABASE CONFIG
-// ===============================
-const SUPABASE_URL = "তোমার_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "তোমার_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://nfqvstrmpyqwiemcktna.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_FG3q1xCt_cpvcGoDav1vXQ_2wZLMtjC";
 
 const supabase = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
 
-// ===============================
-// USER INFO
-// ===============================
 document.getElementById("name").textContent =
   user.first_name || "বন্ধু";
 
 document.getElementById("avatar").textContent =
   (user.first_name || "U")[0];
 
-// ===============================
-// BALANCE
-// ===============================
 async function refresh() {
+
   if (!user.id) return;
 
   const { data, error } = await supabase
     .from("users")
     .select("balance")
     .eq("telegram_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!error && data) {
     document.getElementById("balance").textContent =
@@ -45,10 +37,8 @@ async function refresh() {
   }
 }
 
-// ===============================
-// HOME
-// ===============================
 function home() {
+
   document.getElementById("content").innerHTML = `
     <h2>🏠 Home</h2>
     <p>Task complete করে balance বাড়বে।</p>
@@ -57,9 +47,6 @@ function home() {
   refresh();
 }
 
-// ===============================
-// LOAD TASKS FROM SUPABASE
-// ===============================
 async function loadTasks() {
 
   document.getElementById("content").innerHTML = `
@@ -74,19 +61,23 @@ async function loadTasks() {
     .order("id", { ascending: false });
 
   if (error) {
+
     document.getElementById("content").innerHTML = `
       <h2>📋 Tasks</h2>
       <p>❌ Task লোড হয়নি</p>
       <small>${error.message}</small>
     `;
+
     return;
   }
 
   if (!tasks || tasks.length === 0) {
+
     document.getElementById("content").innerHTML = `
       <h2>📋 Tasks</h2>
       <p>এখন কোনো Task নেই।</p>
     `;
+
     return;
   }
 
@@ -94,10 +85,14 @@ async function loadTasks() {
     <h2>📋 Tasks</h2>
 
     ${tasks.map(t => `
-      <div class="task">
-        <b>${t.title || "Daily Task"}</b>
 
-        <p>${t.description || t.text || ""}</p>
+      <div class="task">
+
+        <b>${t.title || "Task"}</b>
+
+        <p>
+          ${t.description || ""}
+        </p>
 
         <p>
           💰 Reward: ৳${Number(t.reward || 0).toFixed(2)}
@@ -105,19 +100,22 @@ async function loadTasks() {
 
         ${
           t.url
-            ? `<a href="${t.url}" target="_blank">
-                 <button class="primary">🔗 Open Task</button>
-               </a>`
-            : ""
+          ? `
+            <a href="${t.url}" target="_blank">
+              <button class="primary">
+                🔗 Open Task
+              </button>
+            </a>
+          `
+          : ""
         }
+
       </div>
+
     `).join("")}
   `;
 }
 
-// ===============================
-// REFERRAL
-// ===============================
 function showReferral() {
 
   const link =
@@ -125,6 +123,7 @@ function showReferral() {
 
   document.getElementById("content").innerHTML = `
     <h2>🎁 Referral</h2>
+
     <p>আপনার referral link:</p>
 
     <input
@@ -142,21 +141,21 @@ function showReferral() {
   `;
 }
 
-// ===============================
-// PROFILE
-// ===============================
 function showProfile() {
 
   document.getElementById("content").innerHTML = `
     <h2>👤 Profile</h2>
-    <p>Name: ${user.first_name || "Demo"}</p>
-    <p>Telegram ID: ${user.id || "Demo"}</p>
+
+    <p>
+      Name: ${user.first_name || "Demo"}
+    </p>
+
+    <p>
+      Telegram ID: ${user.id || "Demo"}
+    </p>
   `;
 }
 
-// ===============================
-// WITHDRAW
-// ===============================
 function showWithdraw() {
 
   document.getElementById("content").innerHTML = `
@@ -184,15 +183,9 @@ function showWithdraw() {
   `;
 }
 
-// ===============================
-// WITHDRAW REQUEST
-// ===============================
 async function withdraw() {
 
-  alert("Withdraw system পরে connect করতে হবে।");
+  alert("Withdraw system এখনো connect করা হয়নি।");
 }
 
-// ===============================
-// START
-// ===============================
 refresh();
