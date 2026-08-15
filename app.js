@@ -3,7 +3,7 @@
 // Telegram User + Balance + Tasks + Referral + Withdraw
 // =====================================================
 
-const tg = window.Telegram?.WebApp || null;
+const tg = window.Telegram?.WebApp;
 
 if (tg) {
   tg.ready();
@@ -11,6 +11,10 @@ if (tg) {
 }
 
 const telegramUser = tg?.initDataUnsafe?.user || {};
+
+const startParam = tg?.initDataUnsafe?.start_param || "";
+
+console.log("Referral ID:", startParam);
 
 
 // =====================================================
